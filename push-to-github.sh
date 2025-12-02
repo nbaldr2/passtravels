@@ -1,28 +1,24 @@
 #!/bin/bash
 
-# Script to push the project to GitHub
-# First, create a new repository on GitHub at https://github.com/new
-# Then run this script with your repository URL as an argument:
-# ./push-to-github.sh https://github.com/yourusername/your-repo-name.git
+# Script to push the PassTravels project to GitHub
+# This script will push to nbaldr2's GitHub account
 
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <repository-url>"
-    echo "Example: $0 https://github.com/username/passtravels.git"
-    exit 1
-fi
-
-REPO_URL=$1
-
-echo "Setting up Git repository..."
+echo "Setting up Git repository for nbaldr2..."
 cd /Users/soufianerochdi/Documents/passtravels
 
-echo "Adding remote origin..."
-git remote add origin $REPO_URL
+# Check if origin already exists
+if git remote get-url origin > /dev/null 2>&1; then
+    echo "Origin already exists. Removing existing origin..."
+    git remote remove origin
+fi
 
-echo "Renaming branch to main..."
+echo "Adding remote origin for nbaldr2..."
+git remote add origin https://github.com/nbaldr2/passtravels.git
+
+echo "Renaming branch to main (if needed)..."
 git branch -M main
 
-echo "Pushing to GitHub..."
+echo "Pushing to GitHub (nbaldr2)..."
 git push -u origin main
 
-echo "Done! Your repository has been pushed to GitHub."
+echo "Done! Your repository has been pushed to GitHub under nbaldr2 account."
