@@ -14,6 +14,11 @@ app.get('/', (req, res) => {
     res.send('Travel Visa Intelligence API is running');
 });
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+
 import authRoutes from './routes/auth.routes';
 import passportRoutes from './routes/passport.routes';
 import countryRoutes from './routes/country.routes';

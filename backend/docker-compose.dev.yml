@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: passtravels-postgres
+    container_name: passtravels-postgres-dev
     restart: unless-stopped
     ports:
       - "51214:5432"
@@ -10,20 +10,20 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: passtravels
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d passtravels" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - passtravels-network
+      - passtravels-network-dev
 
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: passtravels-backend
+      dockerfile: Dockerfile.dev
+    container_name: passtravels-backend-dev
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -33,23 +33,24 @@ services:
       JWT_SECRET: ${JWT_SECRET:-supersecretkey}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       TRAVEL_BUDDY_API_KEY: ${TRAVEL_BUDDY_API_KEY}
-      NODE_ENV: production
+      NODE_ENV: development
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - passtravels-network
+      - passtravels-network-dev
     volumes:
-      # Optional: Mount for development hot-reload (comment out for production)
-      # - ./src:/app/src
-      # - ./prisma:/app/prisma
-      - backend_logs:/app/logs
+      # Hot-reload for development
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - /app/node_modules
+      - backend_logs_dev:/app/logs
 
 volumes:
-  postgres_data:
-  backend_logs:
+  postgres_data_dev:
+  backend_logs_dev:
 
 
 networks:
-  passtravels-network:
+  passtravels-network-dev:
     driver: bridge
