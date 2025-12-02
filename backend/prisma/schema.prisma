@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  trips         Trip[]
+  favorites     Favorite[]
+  passportCode  String?
+  
+  // Profile fields
+  fullName      String?
+  bio           String?
+  avatarUrl     String?
+  notificationsEnabled Boolean @default(true)
+}
+
+model Passport {
+  id            String    @id @default(uuid())
+  countryCode   String    @unique // ISO 2-letter code
+  rank          Int
+  mobilityScore Int
+  
+  visaRules     VisaRule[]
+}
+
+model Country {
+  id            String    @id @default(uuid())
+  name          String
+  code          String    @unique // ISO 2-letter code
+  region        String?
+  description   String?
+  safetyScore   Float?
+  
+  visaRules     VisaRule[]
+  eVisaLinks    EVisaLink[]
+  favorites     Favorite[]
+}
+
+model VisaRule {
+  id                    String    @id @default(uuid())
+  originPassportId      String
+  destinationCountryId  String
+  type                  String    // visa-free, evisa, voa, required, ban
+  duration              Int?      // days
+  notes                 String?
+  
+  originPassport        Passport  @relation(fields: [originPassportId], references: [id])
+  destinationCountry    Country   @relation(fields: [destinationCountryId], references: [id])
+
+  @@unique([originPassportId, destinationCountryId])
+}
+
+model EVisaLink {
+  id          String    @id @default(uuid())
+  countryId   String
+  officialUrl String?
+  portalUrl   String?
+  
+  country     Country   @relation(fields: [countryId], references: [id])
+}
+
+model Trip {
+  id            String    @id @default(uuid())
+  userId        String
+  destinationId String?
+  startDate     DateTime
+  endDate       DateTime
+  budget        Float?
+  itineraryJson Json?     // Stores the AI generated itinerary
+  
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  countryId String
+  
+  user      User     @relation(fields: [userId], references: [id])
+  country   Country  @relation(fields: [countryId], references: [id])
+
+  @@unique([userId, countryId])
+}
