@@ -29,3 +29,8 @@ eas build --platform android
 - AI travel planner
 - Interactive map
 - User authentication
+- Over-the-air updates with Expo Updates
+
+## Updates
+
+The app uses Expo Updates for over-the-air updates. For more information, see [docs/UPDATES.md](docs/UPDATES.md).

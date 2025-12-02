@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { userService } from '../../services';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Updates from 'expo-updates';
 import {
     Text,
     Card,
@@ -30,6 +31,8 @@ export default function ProfileScreen() {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [editForm, setEditForm] = useState({ fullName: '', bio: '' });
     const [saving, setSaving] = useState(false);
+    const [checkingUpdates, setCheckingUpdates] = useState(false);
+    const [updateInfo, setUpdateInfo] = useState<{ isAvailable: boolean } | null>(null);
 
     useEffect(() => {
         loadProfile();
@@ -73,6 +76,42 @@ export default function ProfileScreen() {
             // Revert on failure
             setProfile((prev: any) => ({ ...prev, notificationsEnabled: !value }));
             Alert.alert('Error', 'Failed to update settings');
+        }
+    };
+
+    // Add this function to check for updates
+    const checkForAppUpdates = async () => {
+        setCheckingUpdates(true);
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            setUpdateInfo(update);
+            
+            if (update.isAvailable) {
+                Alert.alert(
+                    'Update Available',
+                    'A new version of PassTravels is available. Would you like to update now?',
+                    [
+                        {
+                            text: 'Later',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Update',
+                            onPress: async () => {
+                                await Updates.fetchUpdateAsync();
+                                await Updates.reloadAsync();
+                            },
+                        },
+                    ]
+                );
+            } else {
+                Alert.alert('Up to Date', 'You are using the latest version of PassTravels.');
+            }
+        } catch (error) {
+            console.error('Error checking for updates:', error);
+            Alert.alert('Error', 'Failed to check for updates. Please try again later.');
+        } finally {
+            setCheckingUpdates(false);
         }
     };
 
@@ -196,6 +235,33 @@ export default function ProfileScreen() {
                             titleStyle={{ color: 'white' }}
                             left={props => <List.Icon {...props} icon="bell" color={theme.colors.primary} />}
                             right={props => <Switch value={profile?.notificationsEnabled ?? true} onValueChange={toggleNotifications} color={theme.colors.primary} />}
+                        />
+                    </List.Section>
+                </Card>
+
+                {/* App Updates Section */}
+                <Card style={{ backgroundColor: theme.colors.surface, marginBottom: 24 }}>
+                    <List.Section>
+                        <List.Subheader style={{ color: theme.colors.primary, fontWeight: 'bold' }}>App Updates</List.Subheader>
+
+                        <List.Item
+                            title="Check for Updates"
+                            titleStyle={{ color: 'white' }}
+                            description={updateInfo?.isAvailable ? "Update available" : "Check for the latest version"}
+                            descriptionStyle={{ color: updateInfo?.isAvailable ? theme.colors.primary : 'gray' }}
+                            left={props => <List.Icon {...props} icon="update" color={theme.colors.primary} />}
+                            right={props => checkingUpdates ? <ActivityIndicator size="small" color={theme.colors.primary} /> : <List.Icon {...props} icon="chevron-right" color="gray" />}
+                            onPress={checkForAppUpdates}
+                        />
+                        
+                        <Divider style={{ backgroundColor: theme.colors.background }} />
+                        
+                        <List.Item
+                            title="Current Version"
+                            titleStyle={{ color: 'white' }}
+                            description={`v${Updates.updateId || '1.0.0'}`}
+                            descriptionStyle={{ color: 'gray' }}
+                            left={props => <List.Icon {...props} icon="information" color={theme.colors.primary} />}
                         />
                     </List.Section>
                 </Card>
