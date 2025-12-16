@@ -174,4 +174,4 @@ MIT
 
 ## 👥 Authors
 
-Built with ❤️ by the PassTravels team
+Built with ❤️ by Soufiane Rochdi
