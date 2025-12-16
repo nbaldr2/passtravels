@@ -172,6 +172,4 @@ eas build --platform android
 
 MIT
 
-## 👥 Authors
-
 Built with ❤️ by Soufiane Rochdi
